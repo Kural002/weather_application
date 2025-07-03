@@ -1,46 +1,38 @@
 import 'dart:convert';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:weather_app/models/Weather_model.dart';
 import 'package:http/http.dart' as http;
 
-class WeatherServices {
-  static const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
-  final String apiKey;
+class WeatherService {
+  static const String apiKey = '2e5202a07f069c35f22ee6779987a273';
 
-  WeatherServices(this.apiKey);
+  static Future<Map<String, dynamic>?> getWeather(String city) async {
+    final url =
+        'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric';
 
-  Future<Weather> getWeather(String cityName) async {
-    final reponse = await http
-        .get(Uri.parse('$BASE_URL?q=$cityName&appid=$apiKey&units=metrics'));
-
-    if (reponse.statusCode == 200) {
-      return Weather.fromJson(jsonDecode(reponse.body));
-    } else {
-      throw Exception('Failed to load data');
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'temp': data['main']['temp'],
+        'feels_like': data['main']['feels_like'],
+        'humidity': data['main']['humidity'],
+        'wind_speed': data['wind']['speed'],
+        'description': data['weather'][0]['description'],
+        'timestamp': data['dt'],
+        'timezone': data['timezone'],
+      };
     }
+    return null;
   }
 
-  Future<String> getCurrentCity() async {
-    var testLatitude = 37.7749;
-    var testLongitude = -122.4194;
-    //get permission from user
-    LocationPermission permission = await Geolocator.checkPermission();
+  static Future<List<String>> getCitySuggestions(String query) async {
+    final url =
+        'http://api.openweathermap.org/geo/1.0/direct?q=$query&limit=5&appid=$apiKey';
 
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
+      return data.map((item) => item['name'] as String).toList();
     }
-    //fetch the current location
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    //convert the location into a list of placemark object
-    List<Placemark> placemark = await placemarkFromCoordinates(
-      testLatitude,
-      testLongitude,
-    );
-
-    //extract the city name from the first placemark
-    String? city = placemark[0].locality;
-    return city ?? "";
+    return [];
   }
 }
