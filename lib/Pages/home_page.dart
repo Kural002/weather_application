@@ -4,6 +4,7 @@ import 'package:weather_app/sevices/weather_services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:weather_app/utils/website_constraints.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,13 +19,11 @@ class _HomePageState extends State<HomePage> {
   bool _fontLoaded = true; // Track font loading status
 
   final TextEditingController _controller = TextEditingController();
-
   @override
   void initState() {
     super.initState();
     _initializeFonts();
     fetchWeather();
-    
   }
 
   Future<void> _initializeFonts() async {
@@ -68,6 +67,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isweb = WebsiteConstraints.isWeb(context);
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -107,11 +108,9 @@ class _HomePageState extends State<HomePage> {
                     return TextField(
                       controller: controller,
                       focusNode: focusNode,
-                      
                       style: _getTextStyle(color: Colors.black87),
                       decoration: InputDecoration(
-                        hintText:  'Search City' ,
-                        
+                        hintText: 'Search City',
                         labelStyle: _getTextStyle(color: Colors.black54),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -134,6 +133,7 @@ class _HomePageState extends State<HomePage> {
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
+                          Padding(padding: EdgeInsets.all(20)),
                           Text(
                             city,
                             style: _getTextStyle(
@@ -168,6 +168,7 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 20),
                           Container(
                             padding: const EdgeInsets.all(20),
+                            width: isweb? 500 : double.infinity,
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(16),
